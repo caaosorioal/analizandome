@@ -60,7 +60,8 @@ def export_dataset(df, path, name, format = 'csv'):
             final_path,
             index = False,
             sep = '\t',
-            header = True
+            header = True,
+            encoding = 'utf-8'
         )
     elif format == 'xlsx':
         df.to_excel(
