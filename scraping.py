@@ -3,6 +3,7 @@ from unicodedata import name
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
+from datetime import datetime
 
 def get_urls(url_base):
     page = 2
@@ -47,8 +48,9 @@ def read_content(soup):
     posts_content = soup.find_all('div', 'entry-content')
     cleaned_posts_content = []
     for tag in posts_content:
-        post_text = tag.find('p')
-        cleaned_posts_content.append(post_text.text)
+        post_text = tag.find_all('p')
+        p_posts = [post.text.replace('\t', ' ') for post in post_text]
+        cleaned_posts_content.append(' '.join(p_posts))
 
     return cleaned_posts_content
 
@@ -59,7 +61,7 @@ def export_dataset(df, path, name, format = 'csv'):
         df.to_csv(
             final_path,
             index = False,
-            sep = '\t',
+            sep = '|',
             header = True,
             encoding = 'utf-8'
         )
@@ -81,20 +83,20 @@ if __name__ == '__main__':
             soup = get_soup(url)
             posts_titles = read_titles(soup)
             posts_dates = read_dates(soup)
-            posts_content = read_content(soup)
+            posts_content = read_content(soup) 
 
             df_temp = pd.DataFrame(
                 data = {'title' : posts_titles,
                         'date' :  posts_dates,
                         'content' : posts_content
                 }
-            )
+            ) 
 
             list_df_posts.append(df_temp)
             print(f'The page {url} was succesfully processed')
 
         except Exception as e:
-            print('Ops, something happen in the page:', url)
+            print('Ops, something happened in the page:', url, e)
 
     df_posts = pd.concat(list_df_posts)
 
@@ -102,3 +104,4 @@ if __name__ == '__main__':
     path = '/Users/carlosandresosorioalcalde/Documents/GitHub/Analizandome'
     filename = 'notas_en_blanco'
     export_dataset(df_posts, path, filename)
+    
